@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: crawler-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/harness_db}
+    username: ${DB_USERNAME:harness}
+    password: ${DB_PASSWORD:harness}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+
+server:
+  port: 8083
+
+crawler:
+  user-agent: "Mozilla/5.0 (compatible; HarnessBot/1.0)"
+  timeout-ms: 10000
+  max-retries: 3
+  # 동적 페이지 필요 시 Playwright 모드 활성화
+  playwright-enabled: ${PLAYWRIGHT_ENABLED:false}
+
+topics:
+  data-collected: harness.data.collected

@@ -1,0 +1,124 @@
+spring:
+  profiles:
+    active: local
+
+  application:
+    name: harness-app
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/harness_db
+    username: ${DB_USERNAME:harness}
+    password: ${DB_PASSWORD:harness}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # local: update 가능, prod: 반드시 validate
+    show-sql: true
+    open-in-view: false           # ★ OSIV 비활성화 (LazyLoading 실수 방지)
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  # HTTP 응답에 서버 정보 노출 방지
+  server-header: ""
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-key-must-be-at-least-256-bits-long!!}
+  issuer: harness-app
+  access-token-expiry-ms: 900000     # ★ 15분 (30분 → 15분으로 단축, 보안 강화)
+  refresh-token-expiry-ms: 604800000 # 7일
+
+rate-limit:
+  login:
+    capacity: 5
+    refill-tokens: 5
+    refill-seconds: 60
+
+# ① AI Agent 설정
+claude:
+  api-key: ${CLAUDE_API_KEY:}            # .env.local 또는 환경변수로 주입
+  model: claude-opus-4-5
+  max-tokens: 2048
+
+# ② Spring Batch 설정
+spring.batch:
+  job:
+    enabled: false                        # 앱 시작 시 자동 실행 방지
+  jdbc:
+    initialize-schema: always            # Batch 메타 테이블 자동 생성 (H2용)
+
+# ③ Kafka 설정
+kafka:
+  bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+  topics:
+    data-collected: harness.data.collected
+    analysis-requested: harness.analysis.requested
+    analysis-completed: harness.analysis.completed
+
+logging:
+  level:
+    com.harness: DEBUG
+    org.hibernate.SQL: DEBUG
+    # 토큰/비밀번호 로그 절대 출력 금지
+    org.springframework.security: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
+  server-header: ""
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: harness-app
+  access-token-expiry-ms: 900000
+  refresh-token-expiry-ms: 604800000
+
+rate-limit:
+  login:
+    capacity: 5
+    refill-tokens: 5
+    refill-seconds: 60
+
+logging:
+  level:
+    com.harness: INFO
+    org.springframework.security: WARN

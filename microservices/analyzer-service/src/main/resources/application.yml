@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: analyzer-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/harness_db}
+    username: ${DB_USERNAME:harness}
+    password: ${DB_PASSWORD:harness}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    consumer:
+      group-id: analyzer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.harness.events"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+server:
+  port: 8082
+
+claude:
+  api-key: ${CLAUDE_API_KEY:}
+  model: claude-opus-4-5
+  max-tokens: 2048
+
+topics:
+  data-collected: harness.data.collected
+  analysis-completed: harness.analysis.completed

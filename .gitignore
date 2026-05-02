@@ -1,0 +1,33 @@
+# ── Spring Boot ─────────────────────────────────────────────────────────────
+*.class
+*.jar
+*.war
+target/
+build/
+.gradle/
+.idea/
+*.iml
+.DS_Store
+spring-boot/src/main/resources/application-local.yml
+spring-boot/src/main/resources/application-prod.yml
+
+# ── Gradle wrapper cache ─────────────────────────────────────────────────────
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# ── Node.js ──────────────────────────────────────────────────────────────────
+node_modules/
+dist/
+.env.local
+.env.*.local
+*.log
+playwright-service/coverage/
+
+# ── 환경변수 (절대 커밋 금지) ────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+Thumbs.db
+.DS_Store

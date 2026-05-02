@@ -1,0 +1,89 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # 전역 CORS
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+            allowedMethods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
+            allowedHeaders: ["*"]
+            allowCredentials: true
+
+      # ── 라우팅 테이블 ───────────────────────────────────────────────────────
+      routes:
+
+        # 인증 (공개) → collector-service
+        - id: auth-route
+          uri: ${COLLECTOR_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+
+        # 데이터 수집 → collector-service (JWT 필요)
+        - id: collector-route
+          uri: ${COLLECTOR_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/collect/**
+          filters:
+            - AuthFilter   # 커스텀 JWT 검증 필터
+
+        # 분석/대시보드 → analyzer-service (JWT 필요)
+        - id: analyzer-route
+          uri: ${ANALYZER_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/analysis/**
+          filters:
+            - AuthFilter
+
+        # 크롤링 관리 → crawler-service (ADMIN 권한)
+        - id: crawler-route
+          uri: ${CRAWLER_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/crawl/**
+          filters:
+            - AuthFilter
+            - name: AddRequestHeader
+              args:
+                name: X-Service-Name
+                value: api-gateway
+
+      # 기본 필터 (모든 라우트에 적용)
+      default-filters:
+        - name: CircuitBreaker
+          args:
+            name: defaultCB
+            fallbackUri: forward:/fallback
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+
+server:
+  port: 8080   # 외부에 노출되는 단일 포트
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-key-must-be-at-least-256-bits-long!!}
+  issuer: harness-app
+
+# Spring Cloud Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      defaultCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
