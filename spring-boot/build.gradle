@@ -35,8 +35,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // ── DB ───────────────────────────────────────────────────────────────
-    runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+    implementation 'org.flywaydb:flyway-database-oracle'
 
     // ── JWT ──────────────────────────────────────────────────────────────
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
