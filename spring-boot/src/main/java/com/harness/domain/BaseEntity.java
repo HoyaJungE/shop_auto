@@ -22,7 +22,9 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "harness_seq")
+    @SequenceGenerator(name = "harness_seq", sequenceName = "HARNESS_SEQ", allocationSize = 50)
+    @Column(name = "id", columnDefinition = "NUMBER(19)")
     private Long id;
 
     @CreatedDate

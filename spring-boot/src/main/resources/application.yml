@@ -35,6 +35,10 @@ spring:
   flyway:
     enabled: false                # 로컬 Oracle은 ddl-auto: update로 대체
 
+  batch:
+    jdbc:
+      initialize-schema: never   # 로컬 Oracle에서 Batch 메타 테이블 자동 생성 비활성화
+
   # Kafka 미설치 환경에서 앱 기동 실패 방지
   autoconfigure:
     exclude:
