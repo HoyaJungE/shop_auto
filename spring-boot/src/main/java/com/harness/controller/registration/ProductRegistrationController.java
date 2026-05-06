@@ -65,6 +65,27 @@ public class ProductRegistrationController {
         return ResponseEntity.ok(ApiResponse.ok(Map.of("taskIds", taskIds)));
     }
 
+    @Operation(summary = "실패한 등록 재시도")
+    @PostMapping("/{id}/register/{platform}/retry")
+    public ResponseEntity<ApiResponse<Map<String, String>>> retry(
+            @PathVariable Long id,
+            @PathVariable Platform platform
+    ) {
+        String taskId = registrationService.retryRegister(id, platform);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("taskId", taskId)));
+    }
+
+    @Operation(summary = "실패 상품 목록 조회")
+    @GetMapping("/failed")
+    public ResponseEntity<ApiResponse<Page<ProductSummaryDto>>> getFailedProducts(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<ProductSummaryDto> result = registrationService
+                .getProducts(Product.Status.ERROR, pageable)
+                .map(ProductSummaryDto::from);
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
     // ── Cafe24 크롤링 ─────────────────────────────────────────
 
     @Operation(summary = "Cafe24 상품 크롤링 요청")

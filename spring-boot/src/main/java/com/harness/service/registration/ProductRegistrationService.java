@@ -105,6 +105,22 @@ public class ProductRegistrationService {
                 .toList();
     }
 
+    /**
+     * 실패한 등록 재시도: FAILED 상태를 초기화 후 재등록
+     */
+    @Transactional
+    public String retryRegister(Long productId, Platform platform) {
+        PlatformRegistration reg = registrationRepository
+                .findByProductIdAndPlatform(productId, platform)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+
+        if (reg.getStatus() != PlatformRegistration.Status.FAILED) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+        reg.resetForRetry(); // FAILED → PENDING 초기화
+        return registerToPlatform(productId, platform);
+    }
+
     // ── 콜백 처리 ─────────────────────────────────────────────
 
     /**

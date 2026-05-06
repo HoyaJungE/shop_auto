@@ -22,7 +22,10 @@ public class PlatformRegistration {
 
     public enum Status { PENDING, RUNNING, SUCCESS, FAILED }
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "platform_reg_seq")
+    @SequenceGenerator(name = "platform_reg_seq", sequenceName = "HARNESS_SEQ", allocationSize = 50)
+    @Column(name = "id", columnDefinition = "NUMBER(19)")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
